@@ -1,3 +1,43 @@
 h1 {
     background-color: red;
 }
+
+.content-box {
+    background-color: blue;
+}
+
+.cell-box {
+    background-color: coral;
+    display: grid;
+    grid-template-columns: repeat(10, 50px);
+    grid-template-rows: repeat(10, 50px);
+    gap: 2px;
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+}
+
+.cell[data-id="0"] {
+    background-color: purple;
+}
+.cell[data-id="1"] {
+    background-color: lightgreen;
+}
+
+.cell[data-id="2"] {
+    background-color: green;
+}
+
+.cell[data-id="3"] {
+    background-color: red;
+}
+
+.cell[data-id="4"] {
+    background-color: blue;
+}
+
+.staged {
+    background-color: black;
+}

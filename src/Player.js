@@ -1,10 +1,12 @@
-import GameBoard from "./Gameboard";
-
 class Player {
 
-    constructor(type, gameBoardHeight, gameBoardWidth) {
+    constructor(type, gameBoard) {
         this.type = type; 
-        this.gameBoard = new GameBoard(gameBoardHeight, gameBoardWidth);
+        this._gameBoard = gameBoard;
+    }
+    
+    get gameBoard() {
+        return this._gameBoard;
     }
 
 }

@@ -17,14 +17,14 @@ function ShipTests() {
 function gameBoardTests() {
 
     const newGameboard = new Gameboard(4, 4); 
-    const newShip = new Ship(2, 'E');
-    const newShip2 = new Ship(3, 'E');
-    const newShip3 = new Ship(3, 'E');
-    const newShip4 = new Ship(4, 'S');
-    const newShip5 = new Ship(3, 'N'); 
+    const newShip = new Ship(2, 'E', 0);
+    const newShip2 = new Ship(3, 'E', 1);
+    const newShip3 = new Ship(3, 'E', 2);
+    const newShip4 = new Ship(4, 'S', 3);
+    const newShip5 = new Ship(3, 'N', 4); 
 
     test('Initialize gameboard', () => {
-        expect(newGameboard.gameBoard).toEqual([[null, null, null, null],[null, null, null, null],[null, null, null, null],[null, null, null, null]]);
+        expect(newGameboard.cells).toEqual([[null, null, null, null],[null, null, null, null],[null, null, null, null],[null, null, null, null]]);
     })
 
     test('Place ship', () => {
@@ -54,7 +54,17 @@ function gameBoardTests() {
     test('Vertical ship', () => {
         expect(newGameboard.placeShip(newShip4, [0, 0])).toBe(true);
     })
+
+    test('Erase ship', () => {
+        newGameboard.eraseShip(newShip4);
+        expect(newGameboard.coordIsEmpty(newShip4.head)).toBe(true);
+    })
+
+    test('Move ship', () => {
+        newGameboard.moveShip([2,1], [3, 0]);
+    })
 }
 
 ShipTests(); 
 gameBoardTests(); 
+

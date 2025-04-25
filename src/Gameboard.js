@@ -1,5 +1,5 @@
 /*
-* Gameboard(4,4) consists of: 
+* For example, Gameboard(4,4) consists of: 
 * [[null, null, null, null]
 *  [null, null, null, null]
 *  [null, null, null, null]
@@ -20,7 +20,8 @@ class GameBoard {
         this.NUM_ROWS = height; 
         this.NUM_COLS = width; 
 
-        this.ships = new Set(); 
+        this.ships = new Map(); 
+
         this.missed = []; 
         this.shipArr = []; 
 
@@ -33,21 +34,39 @@ class GameBoard {
         }
     }
 
-    get gameBoard() {
+    get cells() {
         return this.shipArr; 
     }
 
+    get shipMap() {
+        return this.ships; 
+    }
+
+    /**
+     * Returns what is at coordinate: ship/null. 
+     * @param {*} coord - coordinate [r, c]
+     * @returns - the ship instance if there is a ship, null if not
+     */
+    cellAt(coord) {
+        return this.shipArr[coord[0]][coord[1]];
+    } 
+
+    /**
+     * Checks if the coordinate is empty or not. 
+     * @param {*} coord - coordinate [r, c]
+     * @returns - True if is empty (no ship) at coordinate. 
+     */
     coordIsEmpty(coord) {
         return this.shipArr[coord[0]][coord[1]] === null;
     }
 
     /**
-     * 
-     * @param {*} coord 
-     * @param {*} orientation 
-     * @param {*} length 
-     * @returns 
-     * 
+     * Checks if the given coordinate is in bounds of the gameboard, include orientation and a length to check 
+     * if a ship headed at coord is in bounds.  
+     * @param {*} coord - Coordinate [r, c]
+     * @param {*} orientation - Orientation out of [NESW]
+     * @param {*} length - Length of ship 
+     * @returns True if in bounds, false if not. 
      */
     checkBounds(coord, orientation=null, length=null) {
 
@@ -65,11 +84,31 @@ class GameBoard {
     }
 
     /**
-     * 
+     * Checks if the given ship headed at coord collides with other ships. Note: does not check bounds. 
+     * @param {*} coord - Coordinate [r, c]
+     * @param {*} orientation - Orientation out of [NESW]
+     * @param {*} length Length of ship 
+     * @returns - True if valid, false if not. 
+     */
+    checkValidity(coord, orientation, length) {
+        const [coordR, coordC] = coord; 
+        const [dRow, dCol] = GameBoard.directionVector[orientation];  
+
+        for (let i = 0; i < length; i++) {
+            const newCoord = [coordR + dRow * i, coordC + dCol * i];  
+
+            if (!(this.coordIsEmpty(newCoord))) {
+                return false;     
+            }
+        }
+        return true; 
+    }
+
+    /**
+     * Places a new ship at coord facing orientation {N, E, S, W}. 
      * @param {*} ship
      * @param {*} orientation 
-     * Places a new ship at coord facing orientation {N, E, S, W}. 
-     * If successful, returns true. If this ship is placed out of bounds, returns false.  
+     * @returns - True if successfully placed, false if not. 
      */
     placeShip(ship, coord) {
 
@@ -77,11 +116,11 @@ class GameBoard {
         const orientation = ship.orientation; 
         const [ coordR, coordC ] = coord; 
 
-        if (this.ships.has(ship)) {
+        if (this.ships.has(ship.id)) {
             throw new Error("Same ship added");
         }
 
-        if (!(this.checkBounds(coord, orientation, length))) {
+        if (!(this.checkBounds(coord, orientation, length)) || !(this.checkValidity(coord, orientation, length))) {
             return false;
         }
 
@@ -89,20 +128,61 @@ class GameBoard {
 
         for (let i = 0; i < length; i++) {
             const newCoord = [coordR + dRow * i, coordC + dCol * i];  
-
-            if (!(this.coordIsEmpty(newCoord))) {
-                return false; 
-            } else {
-                this.shipArr[newCoord[0]][newCoord[1]] = ship;
-            }
+            this.shipArr[newCoord[0]][newCoord[1]] = ship;
         }
         
-        this.ships.add(ship);
+        this.ships.set(ship.id, ship);
+        ship.head = coord; 
+
         this.printBoard();
-        console.log(this.ships);
         return true; 
     }
 
+    /**
+     * If there is no ship at oldCoord, returns. 
+     * If there is a ship at oldCoord, it moves it to newCoord.  
+     * @param {*} oldCoord - coordinate moved from 
+     * @param {*} newCoord - coordinate moved to 
+     */
+    moveShip(oldCoord, newCoord) {
+
+        if (!(this.checkBounds(oldCoord)) || !(this.checkBounds(newCoord))) {
+            throw new Error("out of bounds");
+        }
+
+        const ship = this.shipArr[oldCoord[0]][oldCoord[1]]; 
+
+        if (ship === null) {
+            return; 
+        }
+
+        this.eraseShip(ship);
+        this.placeShip(ship, newCoord); 
+    }
+
+    /**
+     * Erases the ship from the gameboard. 
+     * @param {*} ship - Ship object 
+     */
+
+    eraseShip(ship) {
+        const headCoord = ship.head; 
+        const orientation = ship.orientation; 
+
+        for (let i = 0; i < ship.shipLength; i++) {
+            const newCoordR = headCoord[0] + GameBoard.directionVector[orientation][0] * i;
+            const newCoordC = headCoord[1] + GameBoard.directionVector[orientation][1] * i;
+            this.shipArr[newCoordR][newCoordC] = null; 
+        }
+        this.printBoard();
+        this.ships.delete(ship.id);
+    }
+
+    /**
+     * If there is a ship at coordinate, marks a hit on that ship. Otherwise logs a miss. 
+     * @param {*} coord - coordinate [r, c]
+     * @returns - True if coordinate is in bounds, false if not. 
+     */
     receiveAttack(coord) {
         if (!(this.checkBounds(coord))) {
             return false; 
@@ -119,8 +199,12 @@ class GameBoard {
         return true; 
     }
 
+    /**
+     * Checks if every ship on the gameboard has been sunk. 
+     * @returns - True if every ship is sunk, False if not. 
+     */
     allSunk() {
-        for (const ship of this.ships) {
+        for (const ship of this.ships.values()) {
             if (ship.isSunk()) {
                 return false;
             }
