@@ -84,13 +84,18 @@ class GameBoard {
     }
 
     /**
-     * Checks if the given ship headed at coord collides with other ships. Note: does not check bounds. 
+     * Checks if the given ship headed at coord collides with other ships or is out of bounds. 
      * @param {*} coord - Coordinate [r, c]
      * @param {*} orientation - Orientation out of [NESW]
      * @param {*} length Length of ship 
      * @returns - True if valid, false if not. 
      */
-    checkValidity(coord, orientation, length) {
+    checkValidity(coord, orientation, length, ship=null) {
+
+        if (!(this.checkBounds(coord, orientation, length))) {
+            return false; 
+        }
+
         const [coordR, coordC] = coord; 
         const [dRow, dCol] = GameBoard.directionVector[orientation];  
 
@@ -98,7 +103,9 @@ class GameBoard {
             const newCoord = [coordR + dRow * i, coordC + dCol * i];  
 
             if (!(this.coordIsEmpty(newCoord))) {
-                return false;     
+                if (ship === null || ship !== this.cellAt(newCoord)) {
+                    return false;     
+                }
             }
         }
         return true; 
@@ -118,9 +125,9 @@ class GameBoard {
 
         if (this.ships.has(ship.id)) {
             throw new Error("Same ship added");
-        }
+        } 
 
-        if (!(this.checkBounds(coord, orientation, length)) || !(this.checkValidity(coord, orientation, length))) {
+        if (!(this.checkValidity(coord, orientation, length))) {
             return false;
         }
 
@@ -158,6 +165,39 @@ class GameBoard {
 
         this.eraseShip(ship);
         this.placeShip(ship, newCoord); 
+    }
+
+    moveShipByShipRef(ship, newCoord) {
+
+        if (!(this.checkBounds(newCoord))) {
+            throw new Error("out of bounds");
+        }
+
+        if (!(this.checkValidity(newCoord, ship.orientation, ship.shipLength, ship))) {
+            return false; 
+        }
+
+        this.eraseShip(ship);
+        this.placeShip(ship, newCoord);
+
+        return true; 
+    }
+
+    rotateMoveByShipRef(ship, newCoord, newOrientation) {
+        
+        if (!(this.checkBounds(newCoord))) {
+            throw new Error("out of bounds");
+        }
+
+        if (!(this.checkValidity(newCoord, newOrientation, ship.shipLength, ship))) {
+            return false; 
+        }
+
+        this.eraseShip(ship);
+        ship.orientation = newOrientation; 
+        this.placeShip(ship, newCoord);
+
+        return true; 
     }
 
     /**

@@ -9,7 +9,7 @@ logic.initializeGame();
 
 const UI = new userInterface(10, 10, logic); 
 
-UI.createWelcomeScreen();  
+UI.createPickScreen();  
 
 
 /*const newShip = new Ship(2, 'E', 0);

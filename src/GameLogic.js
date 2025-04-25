@@ -42,6 +42,7 @@ class GameLogic {
         }
     }
 
+
     get playerBoard() {
         return this.mainPlayer.gameBoard; 
     }

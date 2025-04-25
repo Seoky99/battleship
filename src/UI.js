@@ -7,14 +7,15 @@ class UI {
 
         this.logic = logic; 
 
-        this.selectedShip = null; 
+        this.selectedShipID = null; 
         this.selectedShipOrientation = null; 
+        this.selectedIsMoving = false;
 
-        this.placedShips = new Set(); 
     }
 
     init() {
-        this.createWelcomeScreen(); 
+        //this.createWelcomeScreen(); 
+        
     }
 
     createWelcomeScreen() {
@@ -36,6 +37,9 @@ class UI {
     }
 
     createPickScreen() {
+
+        this.rotateOnKey(); 
+
         const content = document.querySelector(".content-box");
         content.replaceChildren(); 
 
@@ -62,16 +66,7 @@ class UI {
      
         shipOuterBox.append(cellBox);
 
-        this.rotateOnKey(); 
-
-
-         //testing only 
-         const renderButton = document.createElement("button"); 
-         renderButton.textContent = "RENDER";
-         renderButton.classList = "start-button"; 
-         renderButton.addEventListener("click", (e) => this.renderBoard());
-         shipOuterBox.appendChild(renderButton); 
- 
+        this.renderBoard();
     }
 
     createShipButtons() {
@@ -84,8 +79,8 @@ class UI {
             shipButton.setAttribute('data-length', ship.shipLength);  
             shipButton.textContent = `LENGTH ${ship.shipLength}`;
             shipButton.classList = "ship"; 
-            shipButton.addEventListener("click", (e) => {
-                this.selectedShip = ship.id;
+            shipButton.addEventListener("click", () => {
+                this.selectedShipID = ship.id;
             });  
 
             shipArr.push(shipButton); 
@@ -99,8 +94,6 @@ class UI {
         const cellBox = document.querySelector(".cell-box"); 
         cellBox.replaceChildren();
 
-        //change so the event listener is delegated 
-
         this.logic.playerBoard.cells.forEach((shipRow, i) => {
             shipRow.forEach((ship, j) => {
 
@@ -111,10 +104,10 @@ class UI {
 
                 if (ship !== null) {
                     shipCell.setAttribute("data-id", ship.id);
-                } else {
-                    shipCell.addEventListener("click", () => this.cellOnClick(shipCell));
+                    shipCell.setAttribute("data-orientation", ship.orientation);
                 }
-
+                
+                shipCell.addEventListener("click", () => this.cellOnClick(shipCell));
                 cellBox.appendChild(shipCell);
             })
         })
@@ -122,20 +115,41 @@ class UI {
 
     cellOnClick(shipCell) {
 
-        const hasShip = this.logic.stagedMap.has(this.selectedShip); 
-        const ship = this.logic.stagedMap.get(this.selectedShip); 
+        const shipIsStaged = this.logic.stagedMap.has(this.selectedShipID); 
+        let ship = this.logic.stagedMap.get(this.selectedShipID); 
+        const coords = shipCell.dataset.coord.split(",").map(Number); 
 
-        if (hasShip) {
+        console.log(this.logic.playerBoard.coordIsEmpty(coords));
+
+        if (shipIsStaged) {
             const successful = this.logic.playerBoard.placeShip(ship, shipCell.dataset.coord.split(",").map(Number));
             
             if (successful) {
-                this.logic.stagedMap.delete(this.selectedShip);
-                //temporary
-                this.renderButton(this.selectedShip);
-                this.selectedShip === null; 
-
+                this.logic.stagedMap.delete(this.selectedShipID);
+                this.renderButton(this.selectedShipID);
+                this.selectedShipID = null; 
+                this.selectedShipOrientation = null; 
             }
-        }
+
+        } else if (this.selectedIsMoving && this.selectedShipID !== null) {
+        
+            ship = this.logic.playerBoard.shipMap.get(Number(this.selectedShipID));
+
+            if (ship.orientation !== this.selectedShipOrientation) {
+                this.logic.playerBoard.rotateMoveByShipRef(ship, coords, this.selectedShipOrientation);
+            } else if (this.logic.playerBoard.moveShipByShipRef(ship, coords)) {
+                this.selectedIsMoving = false; 
+            } 
+
+            this.selectedShipID = null;  
+            this.selectedShipOrientation = null; 
+
+        } else if (!(this.logic.playerBoard.coordIsEmpty(coords))) {
+
+            this.selectedShipID = shipCell.dataset.id; 
+            this.selectedShipOrientation = shipCell.dataset.orientation;
+            this.selectedIsMoving = true; 
+        } 
 
         this.renderBoard();
     }
@@ -149,12 +163,13 @@ class UI {
 
             if (keyName === "r") {
                 
-                console.log("hi");
-                if (this.selectedShip !== null) {
-                    console.log(directions[this.logic.stagedMap.get(this.selectedShip).orientation]);
+                if (this.selectedShipID !== null) {
 
-                    this.logic.rotateShipByID(this.selectedShip, directions[this.logic.stagedMap.get(this.selectedShip).orientation]); 
-                    console.log("hi2");
+                    if (!(this.selectedIsMoving)) {
+                        this.logic.rotateShipByID(this.selectedShipID, directions[this.logic.stagedMap.get(this.selectedShipID).orientation]); 
+                    } else {
+                        this.selectedShipOrientation = directions[this.selectedShipOrientation];
+                    }
                 }
             }
 
