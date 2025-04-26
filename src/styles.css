@@ -3,15 +3,41 @@ h1 {
 }
 
 .content-box {
-    background-color: blue;
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    padding: 2%;
+}
+
+.ship-outer-box {
+    display: flex;
+    justify-content: center;
+    gap: 10%;
+}
+
+.ship-buttons {
+    flex: 1;
+    display:flex;
+    flex-direction: column;
+    gap: 2%;
+
+    & button {
+        padding: 10px 20px;
+    }
+
+    & .confirm-button {
+        margin-top: auto;
+    }
 }
 
 .cell-box {
-    background-color: coral;
     display: grid;
     grid-template-columns: repeat(10, 50px);
     grid-template-rows: repeat(10, 50px);
     gap: 2px;
+    flex: 5; 
+    align-items: center;
+    justify-content: center;
 }
 
 .cell {
@@ -19,19 +45,20 @@ h1 {
     height: 50px;
 }
 
+
 .cell[data-id="0"] {
     background-color: purple;
 }
 .cell[data-id="1"] {
-    background-color: lightgreen;
+    background-color: lightsalmon;
 }
 
 .cell[data-id="2"] {
-    background-color: green;
+    background-color: yellow;
 }
 
 .cell[data-id="3"] {
-    background-color: red;
+    background-color: pink;
 }
 
 .cell[data-id="4"] {
@@ -39,5 +66,14 @@ h1 {
 }
 
 .staged {
-    background-color: black;
+    background-color: grey;
 }
+
+.hover-valid {
+    border: 5px solid green;
+}
+
+.hover-invalid {
+    border: 5px solid red;
+}
+

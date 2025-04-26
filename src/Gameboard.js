@@ -112,6 +112,44 @@ class GameBoard {
     }
 
     /**
+     * Returns a list [coordinates, isValid] marking the reachable cells that are valid from coord in the direction of orientation. 
+     * For instance, for a 3x3 board, a ship of length 3 on (0, 1) results in [[[0,1],true]], [[0,2],true]]]. If there is a ship on 0,2, it will be false. 
+     * @param {*} coord - Coordinate [r, c]
+     * @param {*} orientation - Orientation out of [NESW]
+     * @param {*} length Length of ship 
+     * @returns - Returns a list of [coordinates, isValid]
+     */
+    getValidListOfCells(coord, orientation, length, ship=null) {
+
+        if (!(this.checkBounds(coord))) {
+            throw new Error("coord out of bounds");
+        }
+
+        const [coordR, coordC] = coord; 
+        const [dRow, dCol] = GameBoard.directionVector[orientation];  
+        const validCells = []; 
+
+        for (let i = 0; i < length; i++) {
+            const newCoord = [coordR + dRow * i, coordC + dCol * i];  
+            let isValid = true; 
+
+            if (!(this.checkBounds(newCoord))) {
+                return validCells; 
+            }
+
+            if (!(this.coordIsEmpty(newCoord))) {
+                if (ship === null || ship !== this.cellAt(newCoord)) {
+                    isValid = false;    
+                }
+            }
+
+            validCells.push([newCoord, isValid]);
+        }
+
+        return validCells;
+    }
+
+    /**
      * Places a new ship at coord facing orientation {N, E, S, W}. 
      * @param {*} ship
      * @param {*} orientation 

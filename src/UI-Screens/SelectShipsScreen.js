@@ -1,6 +1,6 @@
-class UI {
+class SelectShipsScreen {
 
-    constructor(height, width, logic) {
+    constructor(height, width, logic, nextScreenCallback) {
         this.NUM_ROWS = height; 
         this.NUM_COLS = width; 
         this.board = null; 
@@ -13,27 +13,8 @@ class UI {
 
         this.hoveredCells = [];
         this.lastHovered = null;
-    }
 
-    init() {
-        //this.createWelcomeScreen(); 
-    }
-
-    createWelcomeScreen() {
-        const contentDiv = document.createElement("div"); 
-        
-        const titleScreen = document.createElement("h1"); 
-        titleScreen.textContent = "BATTLESHIP";
-        titleScreen.classList = "welcome-title"; 
-        contentDiv.appendChild(titleScreen);
-
-        const startButton = document.createElement("button"); 
-        startButton.textContent = "Start";
-        startButton.classList = "start-button"; 
-        startButton.addEventListener("click", this.createPickScreen.bind(this));
-        contentDiv.appendChild(startButton); 
-
-        document.querySelector(".content-box").appendChild(contentDiv);
+        this.nextScreenCallback = nextScreenCallback; 
     }
 
     createPickScreen() {
@@ -68,6 +49,7 @@ class UI {
         const confirmButton = document.createElement("button"); 
         confirmButton.textContent = "Confirm";
         confirmButton.classList = "confirm-button";
+        confirmButton.addEventListener("click", () => this.nextScreenCallback());
         shipButtonsBox.appendChild(confirmButton);
 
         shipOuterBox.appendChild(shipButtonsBox); 
@@ -256,4 +238,4 @@ class UI {
     }
 }
 
-export default UI; 
+export default SelectShipsScreen; 

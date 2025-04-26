@@ -12,6 +12,8 @@ class GameLogic {
         this.shipID = 0; 
         this.stagedShips = new Map(); 
 
+        this.allShips = new Map(); 
+
         this.initializeGame(); 
     }
 
@@ -29,16 +31,27 @@ class GameLogic {
         //create Ship instances here! 
         GameLogic.SHIPLENGTHS.forEach((length) => {
             const newShip = new Ship(length, "E", this.shipID++);
+            newShip.isStaged = true; 
             shipArr.push(newShip); 
             this.stagedShips.set(newShip.id, newShip);
+            this.allShips.set(newShip.id, newShip);
         });
-
         return shipArr; 
     }
 
+    intializeAttacks() {
+
+    }
+
+    generateEnemyBoard() {
+        
+    }
+
+
+
     rotateShipByID(id, newOrientation) {
-        if (this.stagedShips.has(id)) {
-            this.stagedShips.get(id).orientation = newOrientation; 
+        if (this.allShips.has(id)) {
+            this.allShips.get(id).orientation = newOrientation; 
         }
     }
 

@@ -8,6 +8,8 @@ class Ship {
 
         this._numBeenHit = 0; 
         this._beenSunk = false; 
+
+        this._isStaged = false; 
     }
 
     hit() {
@@ -40,6 +42,14 @@ class Ship {
 
     set head(coord) {
         this._headCoord = coord; 
+    }
+
+    get isStaged() {
+        return this._isStaged; 
+    }
+
+    set isStaged(isStage) {
+        this._isStaged = isStage; 
     }
 
 }
