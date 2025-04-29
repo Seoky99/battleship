@@ -89,8 +89,6 @@ class BattleScreen {
         this.renderBoard(false);
 
         if (this.logic.enemyBoard.allSunk()) {
-            console.log("??"
-            );
             this.nextScreenCallback("Shining Victory", true); 
             return; 
         }
@@ -99,7 +97,6 @@ class BattleScreen {
         this.renderBoard(true);
 
         if (this.logic.playerBoard.allSunk()) {
-            console.log("?");
             this.nextScreenCallback("Miserable Defeat", false); 
             return; 
         }

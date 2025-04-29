@@ -20,8 +20,6 @@ class UIManager {
 
         welcomeScreen.createWelcomeScreen(); 
     }
-
-
 }
 
 export default UIManager; 

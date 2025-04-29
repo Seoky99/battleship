@@ -21,8 +21,6 @@ class WelcomeScreen {
 
         document.querySelector(".content-box").appendChild(contentDiv);
     }
-
-
 }
 
 export default WelcomeScreen; 

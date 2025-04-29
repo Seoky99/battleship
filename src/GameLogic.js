@@ -25,10 +25,13 @@ class GameLogic {
         this.computerPlayer = new Player("computer", computerPlayerGameboard);  
     }
 
+    /**
+     * Stages the ships: not on the gameboard yet, but keeps tracks of the ships  
+     * @returns the ships placed in an array 
+     */
     initializeShipsBeforePlacement() {
         const shipArr = []; 
 
-        //create Ship instances here! 
         GameLogic.SHIPLENGTHS.forEach((length) => {
             const newShip = new Ship(length, "E", this.shipID++);
             newShip.isStaged = true; 

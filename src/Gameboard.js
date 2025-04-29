@@ -206,7 +206,6 @@ class GameBoard {
      * @param {*} newCoord - coordinate moved to 
      */
     moveShip(oldCoord, newCoord) {
-
         if (!(this.checkBounds(oldCoord)) || !(this.checkBounds(newCoord))) {
             throw new Error("out of bounds");
         }
@@ -221,34 +220,26 @@ class GameBoard {
         this.placeShip(ship, newCoord); 
     }
 
-    moveShipByShipRef(ship, newCoord) {
-
+    /**
+     * 
+     * @param {*} ship - ship reference 
+     * @param {*} newCoord - coordinate moving the ship to 
+     * @param {*} newRotation - pass in if you want the ship to rotate in that orientation as well 
+     * @returns true if successful, false if this is not a valid move
+     */
+    moveShipByShipRef(ship, newCoord, newRotation=null) {
         if (!(this.checkBounds(newCoord))) {
             throw new Error("out of bounds");
         }
 
-        if (!(this.checkValidity(newCoord, ship.orientation, ship.shipLength, ship))) {
+        if (!(this.checkValidity(newCoord, newRotation === null ? ship.orientation : newRotation, ship.shipLength, ship))) {
             return false; 
         }
 
         this.eraseShip(ship);
-        this.placeShip(ship, newCoord);
-
-        return true; 
-    }
-
-    rotateMoveByShipRef(ship, newCoord, newOrientation) {
-        
-        if (!(this.checkBounds(newCoord))) {
-            throw new Error("out of bounds");
+        if (newRotation !== null) {
+            ship.orientation = newRotation; 
         }
-
-        if (!(this.checkValidity(newCoord, newOrientation, ship.shipLength, ship))) {
-            return false; 
-        }
-
-        this.eraseShip(ship);
-        ship.orientation = newOrientation; 
         this.placeShip(ship, newCoord);
 
         return true; 
@@ -256,9 +247,8 @@ class GameBoard {
 
     /**
      * Erases the ship from the gameboard. 
-     * @param {*} ship - Ship object 
+     * @param {*} ship - Ship reference 
      */
-
     eraseShip(ship) {
         const headCoord = ship.head; 
         const orientation = ship.orientation; 
@@ -283,7 +273,6 @@ class GameBoard {
         }
         
         const [r, c] = coord;
-
         const keyCoord = coord.join(",");
 
         this._attempted.add(keyCoord); 
@@ -292,11 +281,8 @@ class GameBoard {
         if (!(this.coordIsEmpty(coord))) {
             const ship = this.shipArr[r][c];            
             ship.hit(coord);  
-
-            console.log("here");
         } else {
             this.missed.add(keyCoord);
-            console.log("here2");
         }
         return true; 
     }

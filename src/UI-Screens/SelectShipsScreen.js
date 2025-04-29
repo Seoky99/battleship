@@ -58,6 +58,10 @@ class SelectShipsScreen {
         this.renderBoard();
     }
 
+    /**
+     * Initializes and returns a ship Document element for each initialized staged ship.
+     * @returns an array of ship Button Document elements 
+     */
     createShipButtons() {
         const shipArr = []; 
 
@@ -79,6 +83,9 @@ class SelectShipsScreen {
         return shipArr; 
     }
 
+    /**
+     * Renders the board, attaching data coordinates and event listeners to each cell. 
+     */
     renderBoard() {
         const cellBox = document.querySelector(".cell-box"); 
         cellBox.replaceChildren();
@@ -93,7 +100,6 @@ class SelectShipsScreen {
 
                 if (ship !== null) {
                     shipCell.setAttribute("data-id", ship.id);
-                    shipCell.setAttribute("data-orientation", ship.orientation);
                 }
                 
                 shipCell.addEventListener("click", () => this.cellOnClick(shipCell));
@@ -105,21 +111,19 @@ class SelectShipsScreen {
         })
     }
 
+    /**
+     * On a cell click: 
+     *  If the ship associated with the cell is staged (not placed yet), attempt to place it on the board on this cell. 
+     *  Otherwise, if the current selected ship is moving to this cell, place it on this cell. 
+     *  Otherwise, select this cell. 
+     * @param {*} shipCell 
+     */
     cellOnClick(shipCell) {
-        let ship = null; 
-        let shipIsStaged = null; 
-
-        if (this.selectedShipID === null) {
-            shipIsStaged = false; 
-        } else {
-            shipIsStaged = this.logic.allShips.get(Number(this.selectedShipID)).isStaged; 
-            ship = this.logic.allShips.get(Number(this.selectedShipID)); 
-        }
-
+        let ship = this.selectedShipID === null ? null : this.logic.allShips.get(Number(this.selectedShipID)); 
+        let shipIsStaged = this.selectedShipID === null ? false : this.logic.allShips.get(Number(this.selectedShipID)).isStaged; 
         const coords = shipCell.dataset.coord.split(",").map(Number); 
 
         if (shipIsStaged) {
-
             ship.orientation = this.selectedShipOrientation;
             const successful = this.logic.playerBoard.placeShip(ship, shipCell.dataset.coord.split(",").map(Number));
 
@@ -133,36 +137,36 @@ class SelectShipsScreen {
             }
 
         } else if (this.selectedIsMoving && this.selectedShipID !== null) {
-        
-            ship = this.logic.playerBoard.shipMap.get(Number(this.selectedShipID));
-
             if (ship.orientation !== this.selectedShipOrientation) {
-                this.logic.playerBoard.rotateMoveByShipRef(ship, coords, this.selectedShipOrientation);
-            } else if (this.logic.playerBoard.moveShipByShipRef(ship, coords)) {
-                this.selectedIsMoving = false; 
+                this.logic.playerBoard.moveShipByShipRef(ship, coords, this.selectedShipOrientation);
+            } else {
+                if (this.logic.playerBoard.moveShipByShipRef(ship, coords)) {
+                    this.selectedIsMoving = false; 
+                }
             } 
-
             this.selectedShipID = null;  
             this.selectedShipOrientation = null; 
 
         } else if (!(this.logic.playerBoard.coordIsEmpty(coords))) {
-
             this.selectedShipID = shipCell.dataset.id; 
-            this.selectedShipOrientation = shipCell.dataset.orientation;
+            this.selectedShipOrientation = this.logic.allShips.get(Number(this.selectedShipID)).orientation;
             this.selectedIsMoving = true; 
         } 
 
         this.renderBoard();
     }
 
+    /**
+     * Attach hover styles on each cell reachable from the moused-over cell 
+     * @param {*} shipCell : Document ship element 
+     */
     cellOnMouseover(shipCell) {
-
         if (this.selectedShipID !== null && this.selectedShipOrientation !== null) {
 
             this.lastHovered = shipCell; 
+
             const ship = this.logic.allShips.get(Number(this.selectedShipID)); 
             const coords = shipCell.dataset.coord.split(",").map(Number); 
-
             const validCells = this.logic.playerBoard.getValidListOfCells(coords, this.selectedShipOrientation, ship.shipLength, ship);
 
             this.hoveredCells = [];
@@ -177,42 +181,20 @@ class SelectShipsScreen {
         }
     }
 
-    /*updateHover() {
-
-        let shipCell = this.lastHovered;
-
-        if (this.selectedShipID !== null && this.selectedShipOrientation !== null) {
-
-            this.lastHovered = shipCell; 
-            const ship = this.logic.allShips.get(Number(this.selectedShipID)); 
-            const coords = shipCell.dataset.coord.split(",").map(Number); 
-
-            const validCells = this.logic.playerBoard.getValidListOfCells(coords, this.selectedShipOrientation, ship.shipLength, ship);
-
-            this.hoveredCells = [];
-
-            validCells.forEach((elt) => {
-                const [ coords, isValid ] = elt; 
-
-                const cell = document.querySelector(`[data-coord="${coords[0]},${coords[1]}"]`);
-                cell.classList= isValid ? "hover-valid" : "hover-invalid";
-                if (isValid) {
-                    this.hoveredCells.push(cell); 
-                }
-            });
-        }
-    }  */
-
+    /**
+     * Remove hover classes from elements currently in the hover cell list. 
+     */
     cellOnMouseout() {
-
         this.hoveredCells.forEach((cell) => {
             cell.classList.remove("hover-valid");
             cell.classList.remove("hover-invalid");
         })
-
         this.hoveredCells = [];
     }   
 
+    /**
+     * On a "R" press, alter the current selected ship orientation. 
+     */
     rotateOnKey() {
         const directions = {'E': 'S', 'S': 'W', 'W': 'N', 'N': 'E'};
 
@@ -224,14 +206,18 @@ class SelectShipsScreen {
                     this.selectedShipOrientation = directions[this.selectedShipOrientation];
                 }
 
-                /*if (this.lastHovered !== null) {
-                    this.updateHover(); 
-                } */
+                if (this.lastHovered !== null) {
+                    this.cellOnMouseout(); 
+                    this.cellOnMouseover(this.lastHovered); 
+                } 
             }
-
         }, false);
     }
 
+    /**
+     * Add a style for buttons that correspond to non-staged ships.  
+     * @param {} shipID 
+     */
     renderButton(shipID) {
         const button = document.querySelector(`button[data-id="${shipID}"]`);
         button.classList = 'staged'; 
