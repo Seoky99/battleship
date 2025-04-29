@@ -10,14 +10,28 @@ class Ship {
         this._beenSunk = false; 
 
         this._isStaged = false; 
+
+        this._hitCoords = new Set(); 
     }
 
-    hit() {
+    hit(coord) {
         this._numBeenHit++; 
+
+        console.log("is hit");
+
+        if (typeof(coord) !== "string") {
+            coord = coord.join(","); 
+        }
+
+        this._hitCoords.add(coord);
     }
 
     isSunk() {
         return this._numBeenHit >= this._length; 
+    }
+
+    get hitSet() {
+        return this._hitCoords; 
     }
 
     get shipLength() {

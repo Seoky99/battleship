@@ -77,3 +77,20 @@ h1 {
     border: 5px solid red;
 }
 
+.battle-box {
+    display: flex;
+    gap: 30px;
+}
+
+.hit {
+    border: 12px solid red;
+}
+
+
+.sunk {
+    border: 12px solid blue;
+}
+
+.missed {
+    border: 12px solid green;
+}

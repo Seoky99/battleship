@@ -98,7 +98,7 @@ class SelectShipsScreen {
                 
                 shipCell.addEventListener("click", () => this.cellOnClick(shipCell));
                 shipCell.addEventListener("mouseover", () => this.cellOnMouseover(shipCell));
-                shipCell.addEventListener("mouseout", () => this.cellOnMouseout())
+                shipCell.addEventListener("mouseout", () => this.cellOnMouseout()); 
 
                 cellBox.appendChild(shipCell);
             })

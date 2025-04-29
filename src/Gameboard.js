@@ -21,14 +21,18 @@ class GameBoard {
         this.NUM_COLS = width; 
 
         this.ships = new Map(); 
+        
+        this._attempted = new Set(); 
+        this._stillValid = new Set(); 
 
-        this.missed = []; 
+        this._missed = new Set(); 
+
         this.shipArr = []; 
-
         for (let i = 0; i < height; i++) {
             const newRow = []; 
             for (let j = 0; j < width; j++) {
                 newRow.push(null); 
+                this._stillValid.add(`${i},${j}`);
             }
             this.shipArr.push(newRow); 
         }
@@ -40,6 +44,18 @@ class GameBoard {
 
     get shipMap() {
         return this.ships; 
+    }
+
+    get missed() {
+        return this._missed; 
+    }
+
+    get attempts() {
+        return this._attempted;
+    }
+
+    get stillValid() {
+        return this._stillValid;
     }
 
     /**
@@ -265,14 +281,22 @@ class GameBoard {
         if (!(this.checkBounds(coord))) {
             return false; 
         }
-
+        
         const [r, c] = coord;
 
+        const keyCoord = coord.join(",");
+
+        this._attempted.add(keyCoord); 
+        this._stillValid.delete(keyCoord); 
+
         if (!(this.coordIsEmpty(coord))) {
-            const ship = this.shipArr[r][c];
-            ship.hit();  
+            const ship = this.shipArr[r][c];            
+            ship.hit(coord);  
+
+            console.log("here");
         } else {
-            this.missed.push(coord); 
+            this.missed.add(keyCoord);
+            console.log("here2");
         }
         return true; 
     }
@@ -283,7 +307,7 @@ class GameBoard {
      */
     allSunk() {
         for (const ship of this.ships.values()) {
-            if (ship.isSunk()) {
+            if (!(ship.isSunk())) {
                 return false;
             }
         }

@@ -39,22 +39,50 @@ class GameLogic {
         return shipArr; 
     }
 
-    intializeAttacks() {
-
-    }
-
     generateEnemyBoard() {
-        
+        //replace with more sophisiticated function later 
+        const ship0 = new Ship(2, 'E', 0);
+        const ship1 = new Ship(3, 'S', 1);
+        const ship2 = new Ship(3, 'W', 2);
+        const ship3 = new Ship(4, 'N', 3);
+        const ship4 = new Ship(5, 'E', 4);
+
+        this.computerPlayer.gameBoard.placeShip(ship0, [1,1]); 
+        this.computerPlayer.gameBoard.placeShip(ship1, [0,4]); 
+        this.computerPlayer.gameBoard.placeShip(ship2, [4,4]); 
+        this.computerPlayer.gameBoard.placeShip(ship3, [6,7]); 
+        this.computerPlayer.gameBoard.placeShip(ship4, [9,1]); 
     }
 
+    generatePlayerBoard() {
+        //replace with more sophisiticated function later 
+        const ship0 = new Ship(2, 'E', 0);
+        const ship1 = new Ship(3, 'S', 1);
+        const ship2 = new Ship(3, 'W', 2);
+        const ship3 = new Ship(4, 'N', 3);
+        const ship4 = new Ship(5, 'E', 4);
 
+        this.mainPlayer.gameBoard.placeShip(ship0, [1,1]); 
+        this.mainPlayer.gameBoard.placeShip(ship1, [0,4]); 
+        this.mainPlayer.gameBoard.placeShip(ship2, [4,4]); 
+        this.mainPlayer.gameBoard.placeShip(ship3, [6,7]); 
+        this.mainPlayer.gameBoard.placeShip(ship4, [9,1]); 
+    }
+
+    generateEnemyAttack() {
+        //for now, randomly chooses a square and attacks that one. 
+        let coord = null; 
+        const available = Array.from(this.mainPlayer.gameBoard.stillValid);
+        const randomTargetIndex = Math.floor(Math.random() * available.length);
+        coord = available[randomTargetIndex].split(",");
+        this.playerBoard.receiveAttack(coord); 
+    }
 
     rotateShipByID(id, newOrientation) {
         if (this.allShips.has(id)) {
             this.allShips.get(id).orientation = newOrientation; 
         }
     }
-
 
     get playerBoard() {
         return this.mainPlayer.gameBoard; 
