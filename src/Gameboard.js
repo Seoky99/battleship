@@ -76,6 +76,14 @@ class GameBoard {
         return this.shipArr[coord[0]][coord[1]] === null;
     }
 
+    coordSunkAt(coord) {
+        if (this.shipArr[coord[0]][coord[1]] !== null) {
+            return this.shipArr[coord[0]][coord[1]].isSunk(); 
+        }
+
+        return false; 
+    }
+
     /**
      * Checks if the given coordinate is in bounds of the gameboard, include orientation and a length to check 
      * if a ship headed at coord is in bounds.  
@@ -136,7 +144,6 @@ class GameBoard {
      * @returns - Returns a list of [coordinates, isValid]
      */
     getValidListOfCells(coord, orientation, length, ship=null) {
-
         if (!(this.checkBounds(coord))) {
             throw new Error("coord out of bounds");
         }
@@ -158,11 +165,52 @@ class GameBoard {
                     isValid = false;    
                 }
             }
-
             validCells.push([newCoord, isValid]);
         }
-
         return validCells;
+    }
+
+    /**
+     * Returns a list of orientations that are valid from one step away from the coord 
+     * @param {} coord 
+     * @returns 
+     */
+    getValidOrientationsFromOneStep(coord) {
+        if (!(this.checkBounds(coord))) {
+            throw new Error("coord out of bounds");
+        }
+
+        const [coordR, coordC] = coord; 
+        const validOrientations = []; 
+
+        for (const [orientation, direction] of Object.entries(GameBoard.directionVector)) {
+        
+            const [ dRow, dCol ] = direction; 
+            const newCoord = [coordR + dRow, coordC + dCol];  
+            
+            if (this.checkBounds(newCoord) && !(this._attempted.has(newCoord.join(",")))) {
+                validOrientations.push(orientation);
+            }
+        }
+        console.log(validOrientations);
+        return validOrientations; 
+    }
+
+    getValidOrientationsFromOneStepAndOrientation(coord, orientation) {
+        if (!(this.checkBounds(coord))) {
+            throw new Error("coord out of bounds");
+        }
+
+        const [coordR, coordC] = coord; 
+        const direction = GameBoard.directionVector[orientation];
+        
+        const [ dRow, dCol ] = direction; 
+        const newCoord = [coordR + dRow, coordC + dCol];  
+            
+        if (this.checkBounds(newCoord) && !(this._attempted.has(newCoord.join(",")))) {
+            return true; 
+        }
+        return false; 
     }
 
     /**
@@ -265,11 +313,11 @@ class GameBoard {
     /**
      * If there is a ship at coordinate, marks a hit on that ship. Otherwise logs a miss. 
      * @param {*} coord - coordinate [r, c]
-     * @returns - True if coordinate is in bounds, false if not. 
+     * @returns - True if it hit, false if not
      */
     receiveAttack(coord) {
         if (!(this.checkBounds(coord))) {
-            return false; 
+            throw new Error("coord out of bounds");  
         }
         
         const [r, c] = coord;
@@ -281,10 +329,11 @@ class GameBoard {
         if (!(this.coordIsEmpty(coord))) {
             const ship = this.shipArr[r][c];            
             ship.hit(coord);  
+            return true; 
         } else {
             this.missed.add(keyCoord);
+            return false; 
         }
-        return true; 
     }
 
     /**
@@ -305,9 +354,9 @@ class GameBoard {
         for (let i = 0; i < this.NUM_ROWS; i++) {
             for (let j = 0; j < this.NUM_COLS; j++) {
                 if (this.coordIsEmpty([i, j])) {
-                    stringRepr += `[NULL0]`;
+                    stringRepr += `[N0]`;
                 } else {
-                    stringRepr += `[SHIP${this.shipArr[i][j].shipLength}]`;
+                    stringRepr += `[S${this.shipArr[i][j].shipLength}]`;
                 }
             }
             stringRepr += `\n`; 

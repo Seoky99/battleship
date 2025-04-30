@@ -15,10 +15,12 @@ class UIManager {
 
         const endingScreen = new EndingScreen(); 
         const battleScreen = new BattleScreen(this.logic, endingScreen.createEndingScreen.bind(endingScreen)); 
-        const selectShipsScreen = new SelectShipsScreen(this.height, this.width, this.logic, battleScreen.createBattleScreen.bind(battleScreen)); 
-        const welcomeScreen = new WelcomeScreen(this.logic, selectShipsScreen.createPickScreen.bind(selectShipsScreen));  
+        //const selectShipsScreen = new SelectShipsScreen(this.height, this.width, this.logic, battleScreen.createBattleScreen.bind(battleScreen)); 
+        //const welcomeScreen = new WelcomeScreen(this.logic, selectShipsScreen.createPickScreen.bind(selectShipsScreen));  
 
-        welcomeScreen.createWelcomeScreen(); 
+        //welcomeScreen.createWelcomeScreen(); 
+
+        battleScreen.createBattleScreen();
     }
 }
 

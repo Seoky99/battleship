@@ -16,13 +16,9 @@ class Ship {
 
     hit(coord) {
         this._numBeenHit++; 
-
-        console.log("is hit");
-
         if (typeof(coord) !== "string") {
             coord = coord.join(","); 
         }
-
         this._hitCoords.add(coord);
     }
 

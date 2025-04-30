@@ -3,6 +3,8 @@ class BattleScreen {
     constructor(logic, nextScreenCallback) {
         this.logic = logic;  
         this.nextScreenCallback = nextScreenCallback; 
+
+        this.computerIsThinking = false; 
     }
 
     createBattleScreen() {
@@ -32,10 +34,14 @@ class BattleScreen {
 
         const message = document.createElement("p"); 
         message.textContent = "Testing a message function";
+        message.classList = "message";
         messageBox.appendChild(message);
         content.appendChild(messageBox); 
 
-        //this.logic.generatePlayerBoard(); 
+        //comment this 
+        this.logic.generatePlayerBoard(); 
+        
+        
         this.logic.generateEnemyBoard();
 
         this.renderBoard(true);
@@ -63,8 +69,7 @@ class BattleScreen {
 
                     if (ship.isSunk()) {
                         shipCell.classList.add("sunk");
-                    }
-                    else if (ship.hitSet.has(`${i},${j}`)) {
+                    } else if (ship.hitSet.has(`${i},${j}`)) {
                         shipCell.classList.add("hit");
                     }
                 }
@@ -82,7 +87,11 @@ class BattleScreen {
         })
     }
 
-    handleEnemyClick(shipCell) {
+    async handleEnemyClick(shipCell) {
+        if (this.computerIsThinking) {
+            return; 
+        }
+
         const coords = shipCell.dataset.coord.split(",").map(Number);
         this.logic.enemyBoard.receiveAttack(coords);
 
@@ -93,13 +102,26 @@ class BattleScreen {
             return; 
         }
 
+        this.computerIsThinking = true; 
+        this.updateMessageBox("Computer is thinking...");
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         this.logic.generateEnemyAttack(); 
+
         this.renderBoard(true);
 
         if (this.logic.playerBoard.allSunk()) {
             this.nextScreenCallback("Miserable Defeat", false); 
             return; 
         }
+
+        this.computerIsThinking = false; 
+        this.updateMessageBox("Done!");
+    }
+
+    updateMessageBox(message) {
+        const messageBox = document.querySelector(".message");
+        messageBox.textContent = message; 
     }
 
 }
