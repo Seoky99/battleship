@@ -33,14 +33,13 @@ class BattleScreen {
         messageBox.classList = "message-box"; 
 
         const message = document.createElement("p"); 
-        message.textContent = "Testing a message function";
+        message.textContent = "Click to get started with the game!";
         message.classList = "message";
         messageBox.appendChild(message);
         content.appendChild(messageBox); 
 
         //comment this 
         this.logic.generatePlayerBoard(); 
-        
         
         this.logic.generateEnemyBoard();
 
@@ -52,9 +51,12 @@ class BattleScreen {
 
         let board = boardIsPlayer ? this.logic.playerBoard : this.logic.enemyBoard; 
         const cellBox = document.querySelector(`.${boardIsPlayer ? "player" : "enemy"}-content`); 
+        const otherBox = document.querySelector(`.${boardIsPlayer ? "enemy" : "player"}-content`); 
         cellBox.replaceChildren();
 
-        //later, separate the rendering depending on type of player
+        cellBox.classList.remove("my-turn");
+        otherBox.classList.add("my-turn");
+
         board.cells.forEach((shipRow, i) => {
             shipRow.forEach((ship, j) => {
 
@@ -63,8 +65,11 @@ class BattleScreen {
                 shipCell.textContent = `B(${i}, ${j})`; 
                 shipCell.classList="cell";
                 
+                
                 if (ship !== null) {
-                    shipCell.setAttribute("data-id", ship.id);
+                    //When ready to hide the board
+                    //shipCell.setAttribute(`data${boardIsPlayer ? `` : `-enemy`}-id`, ship.id);
+                    shipCell.setAttribute(`data-id`, ship.id);
                     shipCell.setAttribute("data-orientation", ship.orientation);
 
                     if (ship.isSunk()) {
@@ -93,7 +98,7 @@ class BattleScreen {
         }
 
         const coords = shipCell.dataset.coord.split(",").map(Number);
-        this.logic.enemyBoard.receiveAttack(coords);
+        const playerSuccessful = this.logic.enemyBoard.receiveAttack(coords);
 
         this.renderBoard(false);
 
@@ -102,21 +107,40 @@ class BattleScreen {
             return; 
         }
 
-        this.computerIsThinking = true; 
-        this.updateMessageBox("Computer is thinking...");
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        this.logic.generateEnemyAttack(); 
-
+        if (playerSuccessful) {
+            this.updateMessageBox(`You hit a ship at ${coords}!`);
+            return; 
+        }
+    
         this.renderBoard(true);
 
-        if (this.logic.playerBoard.allSunk()) {
-            this.nextScreenCallback("Miserable Defeat", false); 
-            return; 
+        this.computerIsThinking = true; 
+        let enemySuccessful = true; 
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1000)
+            this.updateMessageBox("You missed!");}
+                ); 
+    
+
+        while (enemySuccessful) {
+            await new Promise(resolve => {setTimeout(resolve, 2000)
+                this.updateMessageBox("Computer is thinking...");
+            });
+            
+            enemySuccessful = this.logic.generateEnemyAttack(); 
+            this.updateMessageBox(this.logic.message);
+            
+            this.renderBoard(true);
+            
+            if (this.logic.playerBoard.allSunk()) {
+                this.nextScreenCallback("Miserable Defeat", false); 
+                return; 
+            }
         }
 
         this.computerIsThinking = false; 
-        this.updateMessageBox("Done!");
+        this.renderBoard(false);
     }
 
     updateMessageBox(message) {

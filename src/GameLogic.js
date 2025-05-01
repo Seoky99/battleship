@@ -16,6 +16,8 @@ class GameLogic {
         //this.deleteThisTesting = false; 
 
         this.initializeGame(); 
+
+        this.messageDisplayed = ""; 
     }
 
     static SHIPLENGTHS = [2, 3, 3, 4, 5]; 
@@ -80,17 +82,24 @@ class GameLogic {
         this.mainPlayer.gameBoard.placeShip(ship4, [1,5]); 
     }
 
+    /**
+     * If there is no information of hits, chooses any valid position on the board randomly and hits. 
+     * If there is information on previous hits, will attack in an orientation among the valid orientations 
+     * until the correct orientation is realized, then attacks in that orientation until the ship is sunk. 
+     * If the orientation is not realized (e.g ships are all vertically placed and next to each other horizontally, but 
+     * the computer guesses the position as horizontal), when the orientation is not found, will split up clues to match the board state.
+     *  
+     * Returns: true if they successfully hit, false if not. 
+     */
     generateEnemyAttack() {
-        //randomly choose a position if there are no clues. If you hit, add a clue 
         if (this.clues.length === 0) {
-            this.generateRandomAttack();
-            return;
+            return this.randomAttack();
         }
 
         let [ coordList, orientationList ] = this.clues[0]; 
 
         if (orientationList.length > 0) {
-            this.clueHasOrientation();
+            return this.clueHasOrientation();
 
         } else {
             coordList.forEach(coord => {
@@ -102,26 +111,29 @@ class GameLogic {
                 }
             })
             this.clues.shift();
-            this.generateEnemyAttack();
+            return this.generateEnemyAttack();
         }
     }
 
-    generateRandomAttack() {
+    randomAttack() {
         let coord = null; 
         const available = Array.from(this.mainPlayer.gameBoard.stillValid);
         const randomTargetIndex = Math.floor(Math.random() * available.length);
         coord = available[randomTargetIndex].split(",").map(elt => Number(elt));
         //coord = this.deleteThisTesting ? [8, 8] : [1, 1];
 
-        console.log(`Random coord is: ${coord}`);
         if (this.playerBoard.receiveAttack(coord)) {
 
             const validOrientations = this.mainPlayer.gameBoard.getValidOrientationsFromOneStep(coord);
+            this.adaptMessage(coord, "hit"); 
 
             if (validOrientations.length > 0) {
                 this.clues.push([[coord], this.mainPlayer.gameBoard.getValidOrientationsFromOneStep(coord)]);
             }
+            return true;
         } 
+        this.adaptMessage(coord, "miss");
+        return false; 
     }
 
     clueHasOrientation() {
@@ -136,6 +148,8 @@ class GameLogic {
         if (this.playerBoard.receiveAttack(newCoord)) {
             currentClue[1] = orientationList.filter(elt => !(GameLogic.deleteDirectionVector[chosenOrientation].includes(elt)));                
             
+            this.adaptMessage(newCoord, "hit"); 
+
             chosenOrientation === 'E' || chosenOrientation === 'S' ? coordList.push(newCoord) : coordList.unshift(newCoord);
 
             if (this.mainPlayer.gameBoard.coordSunkAt(newCoord)) {
@@ -146,15 +160,19 @@ class GameLogic {
                 })
                 this.clues.shift(); 
                 //this.deleteThisTesting = true;
-                return; 
+                return true; 
             }
 
             //modify orientation if not valid 
             if (!(this.mainPlayer.gameBoard.getValidOrientationsFromOneStepAndOrientation(newCoord, chosenOrientation))) {
                 currentClue[1] = orientationList.filter(elt => elt !== chosenOrientation);
             }
+
+            return true; 
         } else {
             currentClue[1] = orientationList.filter(elt => elt !== chosenOrientation);
+            this.adaptMessage(coord, "miss"); 
+            return false; 
         }
     }
 
@@ -162,6 +180,15 @@ class GameLogic {
         if (this.allShips.has(id)) {
             this.allShips.get(id).orientation = newOrientation; 
         }
+    }
+
+    adaptMessage(coord, status) {
+        const messages = {
+            "hit": `Computer hits your ship at ${coord}${this.mainPlayer.gameBoard.coordSunkAt(coord) ? `,sinking it!` : ``}!`,
+            "miss": `Computer misses your ship at ${coord}!`,
+        }
+
+        this.messageDisplayed = messages[status];
     }
 
     get playerBoard() {
@@ -174,6 +201,10 @@ class GameLogic {
 
     get stagedMap() {
         return this.stagedShips; 
+    }
+
+    get message() {
+        return this.messageDisplayed; 
     }
 }
 
